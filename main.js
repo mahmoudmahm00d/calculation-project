@@ -18,14 +18,11 @@ const camera = new THREE.PerspectiveCamera(
 
 // Environment
 const textureLoader = new THREE.TextureLoader();
-const texture = textureLoader.load(
-  "resources/images/sky.jpg",
-  () => {
-    texture.mapping = THREE.EquirectangularReflectionMapping;
-    texture.colorSpace = THREE.SRGBColorSpace;
-    scene.background = texture;
-  }
-);
+const texture = textureLoader.load("resources/images/sky.jpg", () => {
+  texture.mapping = THREE.EquirectangularReflectionMapping;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  scene.background = texture;
+});
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -49,27 +46,67 @@ const lightHelper = new THREE.PointLightHelper(pointLight);
 const gridHelper = new THREE.GridHelper(200, 50);
 scene.add(lightHelper, gridHelper);
 
-// Camera 
+// Camera
 camera.position.z = 5;
 
 // Add GUI controls element
 const params = {
   size: 1,
+  velocityX: 0.01,
+  velocityY: 0.01,
+  velocityZ: 0.01,
+  positionX: 0,
+  positionY: 0,
+  positionZ: 0,
 };
+
+let lookAt = new THREE.Vector3(0, 0, 0);
+document.addEventListener("keydown", function (event) {
+  switch (event.key) {
+    case "w":
+      lookAt.add(new THREE.Vector3(1, 0, 0));
+      camera.lookAt(lookAt);
+      break;
+    case "s":
+      lookAt.add(new THREE.Vector3(-1, 0, 0));
+      camera.lookAt(lookAt);
+      break;
+    case "a":
+      lookAt.add(new THREE.Vector3(0, 0, 1));
+      camera.lookAt(lookAt);
+      break;
+    case "d":
+      lookAt.add(new THREE.Vector3(0, 0, -1));
+      camera.lookAt(lookAt);
+      break;
+    default:
+      break;
+  }
+});
 
 const gui = new GUI();
 gui.add(params, "size", 1, 5, 0.01).name("size");
+gui.add(params, "velocityX", 0, 1, 0.01).name("Velocity X");
+gui.add(params, "velocityY", 0, 1, 0.01).name("Velocity Y");
+gui.add(params, "velocityZ", 0, 1, 0.01).name("Velocity Z");
+gui.add(params, "positionX", -10, 10, 1).name("Position X");
+gui.add(params, "positionY", -10, 10, 1).name("Position Y");
+gui.add(params, "positionZ", -10, 10, 1).name("Position Z");
 
 // Main function
 function animate() {
   stats.begin();
 
-  cube.rotation.x += 0.01;
-  cube.rotation.y += 0.01;
+  cube.rotation.x += params.velocityX;
+  cube.rotation.y += params.velocityY;
+  cube.rotation.z += params.velocityZ;
+  cube.position.x = params.positionX;
+  cube.position.y = params.positionY;
+  cube.position.z = params.positionZ;
   cube.scale.set(params.size, params.size, params.size);
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
-  controls.update();
+  // controls.update();
   stats.end();
 }
 
